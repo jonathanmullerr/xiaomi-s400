@@ -108,3 +108,68 @@ class AuthTests(unittest.TestCase):
             http.get.side_effect = [response(payload)]
             with self.assertRaises(AuthenticationError):
                 ServiceSession({"userId": "123", "passToken": "synthetic"}, "us", http=http)
+
+    def test_encrypted_wire_request_response_and_protocol_errors(self):
+        import hashlib
+        import json
+        import struct
+        from unittest.mock import patch
+
+        from xiaomi_s400.auth import rc4
+
+        security = b"0123456789abcdef"
+        nonce = b"12345678" + struct.pack(">I", 28333333)
+        signed = hashlib.sha256(security + nonce).digest()
+        http = Mock(headers={}, cookies=requests.cookies.RequestsCookieJar())
+        final = response()
+        final.cookies.set("serviceToken", "synthetic-service")
+        http.get.side_effect = [
+            response(
+                {
+                    "location": "https://sts.api.io.mi.com/sts",
+                    "ssecurity": base64.b64encode(security).decode(),
+                    "userId": "123",
+                }
+            ),
+            final,
+        ]
+        service = ServiceSession({"userId": "123", "passToken": "synthetic"}, "cn", http=http)
+        upstream = {"code": 0, "result": [{"createTime": 1700000000, "data": "{}"}]}
+        http.post.return_value = Mock(
+            status_code=200, text=base64.b64encode(rc4(signed, json.dumps(upstream).encode())).decode()
+        )
+        with (
+            patch("xiaomi_s400.auth.os.urandom", return_value=b"12345678"),
+            patch("xiaomi_s400.auth.time.time", return_value=1700000000),
+        ):
+            self.assertEqual(
+                service.call("/eco/common/scale/getUserDataByPage", {"model": "yunmai.scales.ms104"}), upstream
+            )
+            sent = http.post.call_args.kwargs["data"]
+            self.assertEqual(json.loads(rc4(signed, base64.b64decode(sent["data"]))), {"model": "yunmai.scales.ms104"})
+            self.assertEqual(base64.b64decode(sent["_nonce"]), nonce)
+            path = "/eco/common/scale/getUserDataByPage"
+            expected_hash = base64.b64encode(
+                hashlib.sha1(
+                    f'POST&{path}&data={{"model":"yunmai.scales.ms104"}}&{base64.b64encode(signed).decode()}'.encode()
+                ).digest()
+            ).decode()
+            self.assertEqual(rc4(signed, base64.b64decode(sent["rc4_hash__"])).decode(), expected_hash)
+            encrypted_signature = (
+                f"POST&{path}&data={sent['data']}&rc4_hash__={sent['rc4_hash__']}&{base64.b64encode(signed).decode()}"
+            )
+            self.assertEqual(
+                sent["signature"], base64.b64encode(hashlib.sha1(encrypted_signature.encode()).digest()).decode()
+            )
+            for text in ("synthetic-secret", base64.b64encode(rc4(signed, b"[]")).decode()):
+                http.post.return_value = Mock(status_code=200, text=text)
+                with self.assertRaises(ProtocolError) as caught:
+                    service.call(path, {})
+                self.assertNotIn("synthetic-secret", str(caught.exception))
+            http.post.return_value = response({"code": -3, "private": "synthetic-secret"})
+            with self.assertRaises(AuthenticationError):
+                service.call(path, {})
+        http.post.side_effect = requests.ConnectionError("synthetic-secret")
+        with self.assertRaises(NetworkError) as caught:
+            service.call("/eco/common/scale/getUserDataByPage", {})
+        self.assertNotIn("synthetic-secret", str(caught.exception))

@@ -135,3 +135,34 @@ class ClientTests(unittest.TestCase):
                     self.assertEqual(factory.call_count, 1)
                     self.assertEqual(old.call.call_count, 1)
                     self.assertEqual(renewed.call.call_count, 1)
+
+    def test_shared_client_access_is_serialized(self):
+        import threading
+        from concurrent.futures import ThreadPoolExecutor
+
+        c = self.client([])
+        entered, release = threading.Event(), threading.Event()
+        active = maximum = 0
+        guard = threading.Lock()
+
+        def remote(*args):
+            nonlocal active, maximum
+            with guard:
+                active += 1
+                maximum = max(maximum, active)
+            entered.set()
+            release.wait(2)
+            with guard:
+                active -= 1
+            return {"code": 0, "result": []}
+
+        c._service.call.side_effect = remote
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            jobs = [pool.submit(c.probe if i % 2 else c.get_measurements) for i in range(4)]
+            self.assertTrue(entered.wait(2))
+            release.set()
+            results = [job.result(timeout=3) for job in jobs]
+        self.assertEqual(maximum, 1)
+        self.assertEqual(c._service.call.call_count, 4)
+        self.assertEqual(results[0]["measurements"], [])
+        self.assertTrue(results[1]["authenticated"])
