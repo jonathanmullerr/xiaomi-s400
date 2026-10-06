@@ -66,4 +66,14 @@ Independent review: PASS after correcting malformed upstream codes and nonfinite
 ## Pending evidence
 
 - Real Xiaomi QR authentication and real S400 retrieval have not been performed. No live personal sessions, measurements, database, or collector credentials were accessed by tests.
-- Public GitHub CI, release assets, and installation from the published tag are recorded after publication.
+## Publication evidence (R6)
+
+- Public MIT repository: https://github.com/jonathanmullerr/xiaomi-s400 (created after checking the name did not exist, using the intended owner credential).
+- Green release-source CI: https://github.com/jonathanmullerr/xiaomi-s400/actions/runs/37542028798 — Python 3.12, Python 3.13, Docker, and clean-wheel gates succeeded.
+- Published tag `v0.1.0` resolves to source commit `9e42578ad7e3528cfd867bcdf739e5c3ef188d91`.
+- Release: https://github.com/jonathanmullerr/xiaomi-s400/releases/tag/v0.1.0 — wheel and source distribution available. Anonymous downloads were verified against the local build using SHA-256.
+- Fresh environment installation from `git+https://github.com/jonathanmullerr/xiaomi-s400.git@v0.1.0` succeeded outside the checkout. Console `--version` returned `0.1.0`, `--help` succeeded, two real SDK stdio tests and three CLI/HTTP adapter smoke tests passed.
+- Tracked files, all seven pre-publication commits, wheel, and sdist were scanned for session filenames, personal paths, and credential patterns; no private artifact was found.
+- No Health Harness file, personal database, or real Xiaomi credential was modified or used. GitHub's previously active account was restored after delivery.
+
+The sole remaining validation limitation is real Xiaomi QR login and real scale history, which were not exercised.

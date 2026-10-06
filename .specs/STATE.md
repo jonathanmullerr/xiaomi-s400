@@ -8,4 +8,4 @@
 
 ## Handoff
 
-T1–T4 complete. Independent review passed after two regression fixes; 21 tests pass on Python 3.12/3.13, clean wheel, and Docker. T5 publication is next. Live Xiaomi validation remains pending.
+T1–T5 complete. Public MIT repository and v0.1.0 release published. CI passed; 21 synthetic tests pass on Python 3.12/3.13, clean wheel, and Docker. Independent review passed with seven killed mutations. Installation from the public tag and CLI/HTTP/MCP smoke passed outside the checkout. Live Xiaomi QR authentication and real S400 collection remain unverified. Health Harness was not modified.
