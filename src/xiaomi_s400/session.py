@@ -1,4 +1,5 @@
 """Credential storage outside the checkout."""
+
 import json
 import os
 import tempfile
