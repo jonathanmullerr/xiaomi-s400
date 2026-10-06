@@ -1,0 +1,9 @@
+*
+!Dockerfile
+!pyproject.toml
+!README.md
+!LICENSE
+!THIRD-PARTY-NOTICES.md
+!src/
+!src/xiaomi_s400/
+!src/xiaomi_s400/*.py

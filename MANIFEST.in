@@ -1,0 +1,3 @@
+include THIRD-PARTY-NOTICES.md Dockerfile .dockerignore
+recursive-include tests *.py
+recursive-include .specs *.md
