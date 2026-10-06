@@ -9,7 +9,7 @@ from pathlib import Path
 from threading import RLock
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from .auth import HISTORY_PATH, MODEL, REJECTED_CODES, ServiceSession
+from .auth import HISTORY_PATH, MODEL, ServiceSession, validate_cloud_response
 from .errors import AuthenticationError, InputError, PaginationError, ProtocolError
 from .session import DEFAULT_SESSION, load_session
 
@@ -60,7 +60,7 @@ def normalize(body: dict, measured: int, *, include_raw: bool = False) -> dict:
         "body_composition": fields,
     }
     if include_raw:
-        result["bruto_nuvem"] = body
+        result["bruto_nuvem"] = json.loads(json.dumps(body), parse_constant=lambda _: None)
     return result
 
 
@@ -113,12 +113,10 @@ class XiaomiS400Client:
             self._service = ServiceSession(load_session(self.session_path), self.region)
         for attempt in range(2):
             try:
-                result = self._service.call(HISTORY_PATH, {**data, "uid": self._service.user_id})
-                if not isinstance(result, dict):
-                    raise ProtocolError()
-                if result.get("code") in REJECTED_CODES:
-                    raise AuthenticationError()
-                if result.get("code") != 0 or not isinstance(result.get("result"), list):
+                result = validate_cloud_response(
+                    self._service.call(HISTORY_PATH, {**data, "uid": self._service.user_id})
+                )
+                if not isinstance(result.get("result"), list):
                     raise ProtocolError()
                 return result
             except AuthenticationError:

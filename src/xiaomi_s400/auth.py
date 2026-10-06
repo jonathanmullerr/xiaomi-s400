@@ -64,6 +64,16 @@ def parse_response(response) -> dict:
     return result
 
 
+def validate_cloud_response(result: object) -> dict:
+    if not isinstance(result, dict) or type(result.get("code")) is not int:
+        raise ProtocolError()
+    if result["code"] in REJECTED_CODES:
+        raise AuthenticationError()
+    if result["code"] != 0:
+        raise ProtocolError()
+    return result
+
+
 def qr_login(*, http=None, show=None, cancel: Event | None = None, clock=time.monotonic) -> dict[str, str]:
     """Show login/QR URLs, poll until expiry, return credentials without logging them.
 
@@ -199,16 +209,10 @@ class ServiceSession:
         )
         # Auth errors may be plaintext even when success responses are RC4.
         if response.text.lstrip().startswith(("{", PREFIX)):
-            result = parse_response(response)
-            if result.get("code") in REJECTED_CODES:
-                raise AuthenticationError()
+            validate_cloud_response(parse_response(response))
             raise ProtocolError()
         try:
             result = json.loads(rc4(signed, base64.b64decode(response.text, validate=True)))
         except (ValueError, TypeError, UnicodeError):
             raise ProtocolError() from None
-        if not isinstance(result, dict):
-            raise ProtocolError()
-        if result.get("code") in REJECTED_CODES:
-            raise AuthenticationError()
-        return result
+        return validate_cloud_response(result)
