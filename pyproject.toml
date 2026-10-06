@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xiaomi-s400"
+version = "0.1.0"
+description = "Unofficial Xiaomi Home S400 scale client, CLI, MCP server, and HTTP collector"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE", "THIRD-PARTY-NOTICES.md"]
+authors = [{name = "Jonathan Muller"}]
+dependencies = ["requests>=2.32,<3", "pycryptodome>=3.21,<4", "mcp>=1.26,<2", "tzdata>=2025.1"]
+
+[project.optional-dependencies]
+dev = ["ruff>=0.11,<1", "build>=1.2,<2"]
+
+[project.urls]
+Repository = "https://github.com/jonathanmullerr/xiaomi-s400"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
