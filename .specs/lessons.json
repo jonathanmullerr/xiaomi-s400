@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 3,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "ac_gap::validate the type of upstream discriminants before membership checks so malformed json produces sanitized protocol errors",
+      "text": "Validate the type of upstream discriminants before membership checks so malformed JSON produces sanitized protocol errors.",
+      "signal": "ac_gap",
+      "scope": "upstream",
+      "status": "candidate",
+      "features": [
+        "v1"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tests/test_regressions.py:23 (upstream)"
+      ],
+      "created": "2026-10-06T22:38:36Z",
+      "last_seen": "2026-10-06T22:38:36Z"
+    },
+    {
+      "id": "L-002",
+      "key": "ac_gap::sanitize nonfinite raw values before strict json export so optional raw fields cannot discard valid normalized measurements",
+      "text": "Sanitize nonfinite raw values before strict JSON export so optional raw fields cannot discard valid normalized measurements.",
+      "signal": "ac_gap",
+      "scope": "exports",
+      "status": "candidate",
+      "features": [
+        "v1"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tests/test_regressions.py:80 (exports)"
+      ],
+      "created": "2026-10-06T22:38:36Z",
+      "last_seen": "2026-10-06T22:38:36Z"
+    }
+  ]
+}

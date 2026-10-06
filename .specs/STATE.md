@@ -8,4 +8,4 @@
 
 ## Handoff
 
-Implementing the five delivery units in features/v1/tasks.md. Live Xiaomi validation remains pending.
+T1–T4 complete. Independent review passed after two regression fixes; 21 tests pass on Python 3.12/3.13, clean wheel, and Docker. T5 publication is next. Live Xiaomi validation remains pending.
