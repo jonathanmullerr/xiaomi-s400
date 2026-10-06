@@ -16,6 +16,9 @@ dependencies = ["requests>=2.32,<3", "pycryptodome>=3.21,<4", "mcp>=1.26,<2", "t
 [project.optional-dependencies]
 dev = ["ruff>=0.11,<1", "build>=1.2,<2"]
 
+[project.scripts]
+xiaomi-s400 = "xiaomi_s400.cli:main"
+
 [project.urls]
 Repository = "https://github.com/jonathanmullerr/xiaomi-s400"
 
